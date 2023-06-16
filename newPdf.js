@@ -34,6 +34,7 @@ const base64toBlob = (dataURI, type) => {
 const printPdf = (data) => {
   const type = "text/pdf;";
   const pdf = `data:${type};base64,${data}`;
+  console.log(type, pdf)
   printFile(base64toBlob(pdf, type));
 };
 

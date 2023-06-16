@@ -3,36 +3,40 @@ let content =
 
 var pdfData = atob(content);
 
+const pdfList = "./pdf-file.pdf";
+
 // Loaded via <script> tag, create shortcut to access PDF.js exports.
 var pdfjsLib = window["pdfjs-dist/build/pdf"];
 
 // The workerSrc property shall be specified.
 pdfjsLib.GlobalWorkerOptions.workerSrc =
   "//mozilla.github.io/pdf.js/build/pdf.worker.js";
-
 // Using DocumentInitParameters object to load binary data.
-// var loadingTask = pdfjsLib.getDocument({ data: pdfData });
-// loadingTask.promise.then(
-//   function (pdf) {
-    // console.log(pdf)
-    // console.log("PDF loaded");
-    // Fetch the first page
-    // (function (pdf)  {
-    //   const type = "application/pdf;"
-    //   const pdfFile = `data:${type};base64,${pdf}`
-    //   printFile(base64toBlob(pdfFile, type))
-    // })()
-    // function base64toBlob  (dataURI, type) {
-    //     console.log(dataURI)
-    //     const byteString = atob(dataURI.split(",")[1])
-    //     const ab = new ArrayBuffer(byteString.length)
-    //     const ia = new Uint8Array(ab)
-    // }
-//   },
-//   function (reason) {
-//     // PDF loading error
-//     console.error(reason);
-//   }
-// );
-// canvas.onload = () => canvas.contentWindow.print()
- 
+var loadingTask = pdfjsLib.getDocument({ data: pdfData });
+loadingTask.promise.then(function (pdf) {
+  // Fetch the first page
+  var pageNumber = 1;
+  pdf.getPage(pageNumber).then(function (page) {
+    console.log(page);
+    var scale = 1.5;
+    var viewport = page.getViewport({ scale: scale });
+
+    // Prepare canvas using PDF page dimensions
+    var canvas = document.getElementById("the-canvas");
+    var context = canvas.getContext("2d");
+    canvas.height = viewport.height;
+    canvas.width = viewport.width;
+    canvas.onload = function () {
+        canvas.contentWindow.print()
+    }
+
+    var renderContext = {
+      canvasContext: context,
+      viewport: viewport,
+    };
+    var renderTask = page.render(renderContext);
+    renderTask.promise.then(function () {
+      console.log("Page rendered");
+    });
+  });
+});
